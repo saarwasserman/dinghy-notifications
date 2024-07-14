@@ -67,3 +67,13 @@ build/consumer:
 	@echo 'Building cmd/email/consumer...'
 	go build -ldflags='-s' -o=./bin/consumer ./cmd/email/consumer
 	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=./bin/linux_amd64/consumer ./cmd/email/consumer
+
+.PHONY: build/docker/api
+build/docker/api:
+	@echo 'Building build/docker/api...'
+	docker build -f build/Dockerfile_api  --tag dinghy/notifications-api:0.1.0 .
+
+.PHONY: build/docker/consumer
+build/docker/consumer:
+	@echo 'Building build/docker/consumer...'
+	docker build -f build/Dockerfile_consumer  --tag dinghy/notifications-consumer:0.1.0 .
