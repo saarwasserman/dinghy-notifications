@@ -1,4 +1,4 @@
-module saarwasserman.com/notifications
+module github.com/saarwasserman/notifications
 
 go 1.22.3
 

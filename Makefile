@@ -21,7 +21,7 @@ confirm:
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
-	@go run ./cmd/server
+	@go run ./cmd/api
 
 .PHONY: run/consumer
 run/consumer:
@@ -67,3 +67,29 @@ build/consumer:
 	@echo 'Building cmd/email/consumer...'
 	go build -ldflags='-s' -o=./bin/consumer ./cmd/email/consumer
 	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=./bin/linux_amd64/consumer ./cmd/email/consumer
+
+.PHONY: build/docker/api
+build/docker/api:
+	@echo 'Building build/docker/api...'
+	docker build --platform linux/amd64,linux/arm64 -f build/Dockerfile_api --tag saarwasserman/dinghy-notifications-api:0.1.0 .
+
+.PHONY: push/docker/api
+push/docker/api: build/docker/api
+	@echo 'Building and Pushing dinghy-notifications-api docker image...'
+	docker push saarwasserman/dinghy-notifications-api:0.1.0
+
+.PHONY: build/docker/consumer
+build/docker/consumer:
+	@echo 'Building build/docker/consumer...'
+	docker build --platform linux/amd64,linux/arm64 -f build/Dockerfile_consumer --tag saarwasserman/dinghy-notifications--email-consumer:0.1.0 .
+
+
+.PHONY: push/docker/consumer
+push/docker/consumer: build/docker/consumer
+	@echo 'Building and Pushing dinghy-notifications-consumer docker image...'
+	docker push saarwasserman/dinghy-notifications-email-consumer:0.1.0
+
+
+.PHONY: push/docker/all
+push/docker/all: push/docker/api push/docker/consumer
+	@echo 'Building and Pushing all project's images...'

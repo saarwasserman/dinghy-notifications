@@ -8,11 +8,11 @@ import (
 	"os"
 	"sync"
 
+	"github.com/saarwasserman/notifications/internal/jsonlog"
+	"github.com/saarwasserman/notifications/internal/mailer"
+	"github.com/saarwasserman/notifications/protogen/notifications"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
-	pb "saarwasserman.com/notifications/grpcgen/proto"
-	"saarwasserman.com/notifications/internal/jsonlog"
-	"saarwasserman.com/notifications/internal/mailer"
 )
 
 
@@ -73,27 +73,25 @@ func main() {
 	// mailer
 	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
-	flag.StringVar(&cfg.smtp.username, "smtp-username", os.Getenv("GREENLIGHT_SMTP_USERNAME"), "SMTP username")
-	flag.StringVar(&cfg.smtp.password, "smtp-password", os.Getenv("GREENLIGHT_SMTP_PASSWORD"), "SMTP password")
-	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.saarw.net>", "SMTP sender")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", os.Getenv("NOTIFICATIONS_SMTP_USERNAME"), "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", os.Getenv("NOTIFICATIONS_SMTP_PASSWORD"), "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "-Your Company- <no-reply@yourcompany.saarw.net>", "SMTP sender")
 
 	// kafka
 	flag.StringVar(&cfg.kafka.host, "kafka-host", "localhost", "Kafka host")
 	flag.IntVar(&cfg.kafka.port, "kafka-port", 9092, "Kafka port")
 	flag.StringVar(&cfg.kafka.topic, "kafka-topic", "general-email", "Kafka topic")
 
-
 	flag.Parse()
 
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
-
 	app := &application{
 		config: cfg,
 		logger: logger,
 		consumer: kafka.NewReader(kafka.ReaderConfig{
-			Brokers:   []string{"localhost:9092"},
+			Brokers:   []string{fmt.Sprintf("%s:%d", cfg.kafka.host, cfg.kafka.port)},
 			Topic:     "general-email",
 			Partition: 0,
 			MaxBytes:  10e6, // 10MB
@@ -101,15 +99,15 @@ func main() {
 		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
-
 	for {
 		m, err := app.consumer.ReadMessage(context.Background())
-
-		emailData := &pb.ActivationEmailRequest{}
-		proto.Unmarshal(m.Value, emailData)
 		if err != nil {
+			logger.PrintFatal(err, nil)
 			break
 		}
+
+		emailData := &notifications.ActivationEmailRequest{}
+		proto.Unmarshal(m.Value, emailData)
 
 		app.background(func() {
 			data := map[string]any{
