@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-email-consumer
+  namespace: apps
+  labels:
+    app: notifications-email-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications-email-consumer
+  template:
+    metadata:
+      labels:
+        app: notifications-email-consumer
+    spec:
+      containers:
+      - name: notifications-email-consumer
+        image: saarwasserman/dinghy-notifications-email-consumer:0.1.0
+        imagePullPolicy: Always
+        command: 
+        - ./bin/consumer
+        - -kafka-host=my-cluster-kafka-bootstrap.kafka.svc.cluster.local
+        - -kafka-port=9092
+        ports:
+        - containerPort: 40011
+        env:
+          - name: NOTIFICATIONS_SMTP_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: notifications-credentials
+                key: notifications-smtp-username
+          - name: NOTIFICATIONS_SMTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: notifications-credentials
+                key: notifications-smtp-password

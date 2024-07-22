@@ -18,6 +18,6 @@ RUN go build -ldflags='-s' -o=./bin/api ./cmd/api
 # But we can document in the Dockerfile what ports
 # the application is going to listen on by default.
 # https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 4000
+EXPOSE 40010
 
 CMD ["./bin/api"]

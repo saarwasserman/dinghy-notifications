@@ -11,7 +11,7 @@ COPY go.mod go.sum ./
 COPY . .
 
 # Build
-RUN go build -ldflags='-s' -o=./bin/api ./cmd/api
+RUN go build -ldflags='-s' -o=./bin/consumer ./cmd/email/consumer
 
 # Optional:
 # To bind to a TCP port, runtime parameters must be supplied to the docker command.
