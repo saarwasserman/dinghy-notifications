@@ -19,10 +19,10 @@ spec:
       - name: notifications-api
         image: saarwasserman/dinghy-notifications-api:0.1.0
         imagePullPolicy: Always
-        command: 
+        command:
           - ./bin/api
           - -port=40010
-          - -kafka-host=my-cluster-kafka-bootstrap.kafka.svc.cluster.local
+          - -kafka-host=kafka.databases.svc.cluster.local
           - -kafka-port=9092
         ports:
         - containerPort: 40010

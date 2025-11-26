@@ -26,16 +26,16 @@ var (
 )
 
 type config struct {
-	port int
-	env  string
+	port    int
+	env     string
 	limiter struct {
 		rps     float64
 		burst   int
 		enabled bool
 	}
 	kafka struct {
-		host string
-		port int
+		host  string
+		port  int
 		topic string
 	}
 	cors struct {
@@ -44,12 +44,11 @@ type config struct {
 }
 
 type application struct {
-	notifications.UnimplementedEMailServiceServer
+	notifications.UnimplementedNotificationsServer
 	config config
 	logger *jsonlog.Logger
-	queue *kafka.Writer
+	queue  *kafka.Writer
 }
-
 
 func main() {
 	var cfg config
@@ -67,7 +66,6 @@ func main() {
 	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
-
 
 	// cors
 	flag.Func("cors-trusted-origins", "Trusted CORS Origins (space separated)", func(val string) error {
@@ -100,8 +98,8 @@ func main() {
 		config: cfg,
 		logger: logger,
 		queue: &kafka.Writer{
-			Addr: 	kafka.TCP(fmt.Sprintf("%s:%d", cfg.kafka.host, cfg.kafka.port)),
-    		// NOTE: When Topic is not defined here, each Message must define it instead.
+			Addr: kafka.TCP(fmt.Sprintf("%s:%d", cfg.kafka.host, cfg.kafka.port)),
+			// NOTE: When Topic is not defined here, each Message must define it instead.
 			Balancer: &kafka.LeastBytes{},
 		},
 	}
@@ -116,7 +114,7 @@ func main() {
 
 	serviceRegistrar := grpc.NewServer()
 
-	notifications.RegisterEMailServiceServer(serviceRegistrar, app)
+	notifications.RegisterNotificationsServer(serviceRegistrar, app)
 
 	err = serviceRegistrar.Serve(listener)
 	if err != nil {
@@ -125,13 +123,12 @@ func main() {
 	}
 }
 
-
 func (app *application) SendActivationEmail(ctx context.Context, req *notifications.SendActivationEmailRequest) (*notifications.SendActivationEmailResponse, error) {
 
 	buff, err := proto.Marshal(&notifications.ActivationEmailRequest{
-		Recipient: req.Recipient,
-		UserId: req.UserId,
-		Token: req.Token,
+		Recipient:    req.Recipient,
+		UserId:       req.UserId,
+		Token:        req.Token,
 		TemplateFile: "user_welcome.tmpl",
 	})
 	if err != nil {

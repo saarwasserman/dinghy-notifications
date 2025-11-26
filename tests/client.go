@@ -13,8 +13,8 @@ import (
 func main() {
 	req := &notifications.SendActivationEmailRequest{
 		Recipient: "test1@test1.com",
-		UserId: "1",
-		Token: "aaaa",
+		UserId:    "1",
+		Token:     "aaaa",
 	}
 
 	var opts []grpc.DialOption
@@ -28,7 +28,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	client := notifications.NewEMailServiceClient(conn)
+	client := notifications.NewNotificationsClient(conn)
 	res, err := client.SendActivationEmail(context.Background(), req)
 	if err != nil {
 		log.Fatal("couldn't greet", err.Error())

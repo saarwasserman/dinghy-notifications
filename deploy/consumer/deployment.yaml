@@ -21,10 +21,17 @@ spec:
         imagePullPolicy: Always
         command: 
         - ./bin/consumer
-        - -kafka-host=my-cluster-kafka-bootstrap.kafka.svc.cluster.local
+        - -kafka-host=kafka.databases.svc.cluster.local
         - -kafka-port=9092
         ports:
         - containerPort: 40011
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         env:
           - name: NOTIFICATIONS_SMTP_USERNAME
             valueFrom:

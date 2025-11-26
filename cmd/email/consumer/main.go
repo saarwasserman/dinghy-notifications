@@ -15,9 +15,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-
 type config struct {
-	env  string
+	env string
 	// limiter struct {
 	// 	rps     float64
 	// 	burst   int
@@ -31,21 +30,19 @@ type config struct {
 		sender   string
 	}
 	kafka struct {
-		host string
-		port int
+		host  string
+		port  int
 		topic string
 	}
 }
 
-
 type application struct {
-	config config
-	logger *jsonlog.Logger
+	config   config
+	logger   *jsonlog.Logger
 	consumer *kafka.Reader
-	mailer mailer.Mailer
-	wg     sync.WaitGroup
+	mailer   mailer.Mailer
+	wg       sync.WaitGroup
 }
-
 
 func (app *application) background(fn func()) {
 
@@ -63,7 +60,6 @@ func (app *application) background(fn func()) {
 		fn()
 	}()
 }
-
 
 func main() {
 	var cfg config
@@ -83,7 +79,6 @@ func main() {
 	flag.StringVar(&cfg.kafka.topic, "kafka-topic", "general-email", "Kafka topic")
 
 	flag.Parse()
-
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
